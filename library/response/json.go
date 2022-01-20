@@ -40,6 +40,7 @@ func (c *jsonResponse) Authorization(r *ghttp.Request, message string) {
 }
 
 //output 设置状态码、清空buffer后输出json并退出当前业务流程(基于gf框架，非gf框架请勿使用)
+//notice:based on gf
 func (c *jsonResponse) output(r *ghttp.Request, status int, code int, message string, data interface{}) {
 	r.Response.WriteStatus(status)
 	r.Response.ClearBuffer()
