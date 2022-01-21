@@ -1,7 +1,7 @@
 package response
 
 import (
-	"github.com/gogf/gf/net/ghttp"
+	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 var Json = jsonResponse{}
@@ -45,9 +45,8 @@ func (c *jsonResponse) output(r *ghttp.Request, status int, code int, message st
 	r.Response.WriteStatus(status)
 	r.Response.ClearBuffer()
 	_ = r.Response.WriteJsonExit(Res{
-		Code:      code,
-		Message:   message,
-		Data:      data,
-		RequestId: r.GetParam("requestId"),
+		Code:    code,
+		Message: message,
+		Data:    data,
 	})
 }
