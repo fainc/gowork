@@ -1,3 +1,4 @@
+//notice:based on gf
 package response
 
 import (
@@ -39,14 +40,13 @@ func (c *jsonResponse) Authorization(r *ghttp.Request, message string) {
 	c.Error(r, 401, 401, message)
 }
 
-//output 设置状态码、清空buffer后输出json并退出当前业务流程(基于gf框架，非gf框架请勿使用)
-//notice:based on gf
 func (c *jsonResponse) output(r *ghttp.Request, status int, code int, message string, data interface{}) {
 	r.Response.WriteStatus(status)
 	r.Response.ClearBuffer()
 	_ = r.Response.WriteJsonExit(Res{
-		Code:    code,
-		Message: message,
-		Data:    data,
+		Code:      code,
+		Message:   message,
+		Data:      data,
+		RequestId: r.GetCtxVar("requestId", "123312"),
 	})
 }
