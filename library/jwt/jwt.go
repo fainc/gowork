@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/gogf/gf/container/garray"
 	"github.com/gogf/gf/crypto/gaes"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
@@ -17,7 +18,7 @@ var Helper = jwtHelper{}
 
 type jwtHelper struct{}
 
-func (*jwtHelper) Parse(r *ghttp.Request, scopeKey string) (string, string, error) {
+func (*jwtHelper) Parse(r *ghttp.Request, scopeKey *garray.StrArray) (string, string, error) {
 	secret := g.Cfg().GetString("jwt.secret")
 	if secret == "" {
 		return "", "", errors.New("jwt secret invalid")
@@ -57,7 +58,7 @@ func (*jwtHelper) Parse(r *ghttp.Request, scopeKey string) (string, string, erro
 		return "", "", errors.New("signature user key decrypt fail")
 	}
 	scope := claims["scope"]
-	if scope == nil || scope != scopeKey {
+	if scope == nil || !scopeKey.ContainsI(gconv.String(scope)) {
 		return "", "", errors.New("scope invalid")
 	}
 	return gconv.String(uuid), gconv.String(scope), nil
