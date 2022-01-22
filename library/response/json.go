@@ -24,7 +24,7 @@ func (c *jsonResponse) Error(r *ghttp.Request, status, code int, message string)
 	c.output(r, status, code, message, nil)
 }
 
-func (c *jsonResponse) StandError(r *ghttp.Request, message string) {
+func (c *jsonResponse) StandardError(r *ghttp.Request, message string) {
 	c.Error(r, 400, 400, message)
 }
 
