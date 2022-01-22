@@ -28,12 +28,12 @@ func (c *jsonResponse) StandError(r *ghttp.Request, message string) {
 	c.Error(r, 400, 400, message)
 }
 
-func (c *jsonResponse) ServerError(r *ghttp.Request, message string) {
-	c.Error(r, 500, 500, message)
+func (c *jsonResponse) ServerError(r *ghttp.Request) {
+	c.Error(r, 500, 500, "服务器发生错误")
 }
 
 func (c *jsonResponse) NotFound(r *ghttp.Request) {
-	c.Error(r, 404, 404, "not found")
+	c.Error(r, 404, 404, "request uri not found")
 }
 
 func (c *jsonResponse) Authorization(r *ghttp.Request, message string) {
