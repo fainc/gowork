@@ -17,18 +17,18 @@ var Helper = jwtHelper{}
 
 type jwtHelper struct{}
 
-func (*jwtHelper) Parse(r *ghttp.Request, scopeKey string) (string, error) {
+func (*jwtHelper) Parse(r *ghttp.Request, scopeKey string) (string, string, error) {
 	secret := g.Cfg().GetString("jwt.secret")
 	if secret == "" {
-		return "", errors.New("jwt secret invalid")
+		return "", "", errors.New("jwt secret invalid")
 	}
 	tokenString := r.GetHeader("Authorization")
 	if tokenString == "" {
-		return "", errors.New("authorization invalid")
+		return "", "", errors.New("authorization invalid")
 	}
 	tokenMap := strings.Split(tokenString, "Bearer ")
 	if len(tokenMap) != 2 {
-		return "", errors.New("bearer invalid")
+		return "", "", errors.New("bearer invalid")
 	}
 	tokenString = tokenMap[1]
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -38,29 +38,29 @@ func (*jwtHelper) Parse(r *ghttp.Request, scopeKey string) (string, error) {
 		return []byte(secret), nil
 	})
 	if err != nil {
-		return "", errors.New(err.Error())
+		return "", "", errors.New(err.Error())
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return "", errors.New(err.Error())
+		return "", "", errors.New(err.Error())
 	}
 	uuid := claims["uuid"]
 	if uuid == nil {
-		return "", errors.New("signature user key invalid")
+		return "", "", errors.New("signature user key invalid")
 	}
 	encodeString, err := hex.DecodeString(gconv.String(uuid))
 	if err != nil {
-		return "", errors.New("signature user key decode hex fail")
+		return "", "", errors.New("signature user key decode hex fail")
 	}
 	uuid, err = gaes.Decrypt(encodeString, []byte(secret))
 	if err != nil {
-		return "", errors.New("signature user key decrypt fail")
+		return "", "", errors.New("signature user key decrypt fail")
 	}
 	scope := claims["scope"]
 	if scope == nil || scope != scopeKey {
-		return "", errors.New("scope invalid")
+		return "", "", errors.New("scope invalid")
 	}
-	return gconv.String(uuid), nil
+	return gconv.String(uuid), gconv.String(scope), nil
 }
 
 func (*jwtHelper) Generate(uuid string, scope string, duration time.Duration) (string, error) {
