@@ -10,6 +10,7 @@ import (
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/golang-jwt/jwt/v4"
+	"gowork/library/response"
 	"strings"
 	"time"
 )
@@ -18,8 +19,8 @@ var Helper = jwtHelper{}
 
 type jwtHelper struct{}
 
-func (*jwtHelper) Parse(r *ghttp.Request, scopeKey *garray.StrArray) (string, string, error) {
-	secret := g.Cfg().GetString("jwt.secret")
+func (*jwtHelper) Parse(r *ghttp.Request, scopesSlice g.SliceStr) (string, string, error) {
+	secret := g.Cfg().GetString("jwt.secret") //配置修改会自动刷新
 	if secret == "" {
 		return "", "", errors.New("jwt secret invalid")
 	}
@@ -58,7 +59,8 @@ func (*jwtHelper) Parse(r *ghttp.Request, scopeKey *garray.StrArray) (string, st
 		return "", "", errors.New("signature user key decrypt fail")
 	}
 	scope := claims["scope"]
-	if scope == nil || !scopeKey.ContainsI(gconv.String(scope)) {
+	scopes := garray.NewStrArrayFrom(scopesSlice)
+	if scope == nil || !scopes.ContainsI(gconv.String(scope)) {
 		return "", "", errors.New("scope invalid")
 	}
 	return gconv.String(uuid), gconv.String(scope), nil
@@ -88,4 +90,34 @@ func (*jwtHelper) Generate(uuid string, scope string, duration time.Duration) (s
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, _ := token.SignedString([]byte(secret))
 	return tokenString, nil
+}
+
+type user struct {
+	UUID  int64
+	SCOPE string
+}
+
+func (*jwtHelper) GetUser(r *ghttp.Request) *user {
+	UUID := r.GetCtxVar("UUID", 0)
+	SCOPE := r.GetCtxVar("SCOPE", "UNKNOWN")
+	return &user{
+		UUID:  gconv.Int64(UUID),
+		SCOPE: gconv.String(SCOPE),
+	}
+}
+
+func (*jwtHelper) StandardAuth(r *ghttp.Request, scopes g.SliceStr, tables g.SliceStr) {
+	whiteTable := garray.NewStrArrayFrom(tables)
+	uuid, scopeKey, err := Helper.Parse(r, scopes)
+	if err != nil {
+		if !whiteTable.ContainsI(r.RequestURI) {
+			response.Json.Authorization(r, err.Error())
+		} else {
+			r.SetCtxVar("UUID", 0)
+			r.SetCtxVar("SCOPE", "UNKNOWN")
+		}
+	} else {
+		r.SetCtxVar("UUID", uuid)
+		r.SetCtxVar("SCOPE", scopeKey)
+	}
 }
