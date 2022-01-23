@@ -90,17 +90,3 @@ func (*jwtHelper) Generate(uuid string, scope string, duration time.Duration) (s
 	tokenString, _ := token.SignedString([]byte(secret))
 	return tokenString, nil
 }
-
-type user struct {
-	UUID  int64
-	SCOPE string
-}
-
-func (*jwtHelper) GetUser(r *ghttp.Request) *user {
-	UUID := r.GetCtxVar("UUID", 0)
-	SCOPE := r.GetCtxVar("SCOPE", "UNKNOWN")
-	return &user{
-		UUID:  gconv.Int64(UUID),
-		SCOPE: gconv.String(SCOPE),
-	}
-}
