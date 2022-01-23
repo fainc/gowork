@@ -1,4 +1,4 @@
-module gowork
+module github.com/fainc/gowork
 
 require (
 	github.com/gogf/gf v1.16.6

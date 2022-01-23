@@ -1,9 +1,9 @@
 package token
 
 import (
+	"github.com/fainc/gowork/library/jwt"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
-	"gowork/library/jwt"
 )
 
 func JwtAuth(r *ghttp.Request) {
