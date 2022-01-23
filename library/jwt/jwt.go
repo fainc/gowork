@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/fainc/gowork/library/response"
 	"github.com/gogf/gf/container/garray"
 	"github.com/gogf/gf/crypto/gaes"
 	"github.com/gogf/gf/frame/g"
@@ -103,21 +102,5 @@ func (*jwtHelper) GetUser(r *ghttp.Request) *user {
 	return &user{
 		UUID:  gconv.Int64(UUID),
 		SCOPE: gconv.String(SCOPE),
-	}
-}
-
-func (*jwtHelper) StandardAuth(r *ghttp.Request, scopes g.SliceStr, tables g.SliceStr) {
-	whiteTable := garray.NewStrArrayFrom(tables)
-	uuid, scopeKey, err := Helper.Parse(r, scopes)
-	if err != nil {
-		if !whiteTable.ContainsI(r.RequestURI) {
-			response.Json.Authorization(r, err.Error())
-		} else {
-			r.SetCtxVar("UUID", 0)
-			r.SetCtxVar("SCOPE", "UNKNOWN")
-		}
-	} else {
-		r.SetCtxVar("UUID", uuid)
-		r.SetCtxVar("SCOPE", scopeKey)
 	}
 }
