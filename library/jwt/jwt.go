@@ -18,11 +18,12 @@ var Helper = jwtHelper{}
 type jwtHelper struct{}
 
 type ParseParams struct {
-	Token  string
-	Scopes g.SliceStr
-	Secret string
+	Token  string     //* jwt字符串
+	Scopes g.SliceStr //* jwt scope可用范围
+	Secret string     //* jwt密钥
 }
 
+//Parse jwt解析、解密
 func (*jwtHelper) Parse(params ParseParams) (int64, string, error) {
 	//secret := g.Cfg().GetString("jwt.secret") //配置修改会自动刷新
 	if params.Secret == "" {
@@ -71,12 +72,13 @@ func (*jwtHelper) Parse(params ParseParams) (int64, string, error) {
 }
 
 type GenerateParams struct {
-	Uuid     int64
-	Scope    string
-	Duration time.Duration
-	Secret   string
+	Uuid     int64         //* 非0用户ID
+	Scope    string        //* 授权scope标志
+	Duration time.Duration //授权时长
+	Secret   string        //jwt及加密密钥
 }
 
+//Generate 生成jwt
 func (*jwtHelper) Generate(params GenerateParams) (string, error) {
 	//secret := g.Cfg().GetString("jwt.secret")
 	if params.Uuid == 0 || params.Scope == "" || params.Duration == 0 || params.Secret == "" {
