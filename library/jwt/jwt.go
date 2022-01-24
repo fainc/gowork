@@ -67,6 +67,7 @@ func (*jwtHelper) Parse(r *ghttp.Request, scopesSlice g.SliceStr) (string, strin
 
 func (*jwtHelper) Generate(uuid string, scope string, duration time.Duration) (string, error) {
 	secret := g.Cfg().GetString("jwt.secret")
+	g.Dump(secret)
 	if secret == "" {
 		return "", errors.New("jwt secret invalid")
 	}
