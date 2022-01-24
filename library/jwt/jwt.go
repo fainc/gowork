@@ -4,13 +4,14 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/gogf/gf/container/garray"
 	"github.com/gogf/gf/crypto/gaes"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/golang-jwt/jwt/v4"
-	"strings"
-	"time"
 )
 
 var Helper = jwtHelper{}
@@ -18,18 +19,18 @@ var Helper = jwtHelper{}
 type jwtHelper struct{}
 
 type ParseParams struct {
-	Token  string     //* jwt字符串
-	Scopes g.SliceStr //* jwt scope可用范围
-	Secret string     //* jwt密钥
+	Token  string     // * jwt字符串
+	Scopes g.SliceStr // * jwt scope可用范围
+	Secret string     // * jwt密钥
 }
 
-//Parse jwt解析、解密
+// Parse jwt解析、解密
 func (*jwtHelper) Parse(params ParseParams) (int64, string, error) {
-	//secret := g.Cfg().GetString("jwt.secret") //配置修改会自动刷新
+	// secret := g.Cfg().GetString("jwt.secret") //配置修改会自动刷新
 	if params.Secret == "" {
 		return 0, "", errors.New("jwt secret invalid")
 	}
-	//tokenString := r.GetHeader("Authorization")
+	// tokenString := r.GetHeader("Authorization")
 	if params.Token == "" {
 		return 0, "", errors.New("authorization invalid")
 	}
@@ -72,15 +73,15 @@ func (*jwtHelper) Parse(params ParseParams) (int64, string, error) {
 }
 
 type GenerateParams struct {
-	Uuid     int64         //* 非0用户ID
-	Scope    string        //* 授权scope标志
-	Duration time.Duration //授权时长
-	Secret   string        //jwt及加密密钥
+	Uuid     int64         // * 非0用户ID
+	Scope    string        // * 授权scope标志
+	Duration time.Duration // * 授权时长
+	Secret   string        // * jwt及加密密钥
 }
 
-//Generate 生成jwt
+// Generate 生成jwt
 func (*jwtHelper) Generate(params GenerateParams) (string, error) {
-	//secret := g.Cfg().GetString("jwt.secret")
+	// secret := g.Cfg().GetString("jwt.secret")
 	if params.Uuid == 0 || params.Scope == "" || params.Duration == 0 || params.Secret == "" {
 		return "", errors.New("generate jwt params invalid")
 	}
