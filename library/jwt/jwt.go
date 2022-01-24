@@ -7,7 +7,6 @@ import (
 	"github.com/gogf/gf/container/garray"
 	"github.com/gogf/gf/crypto/gaes"
 	"github.com/gogf/gf/frame/g"
-	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/golang-jwt/jwt/v4"
 	"strings"
@@ -18,12 +17,12 @@ var Helper = jwtHelper{}
 
 type jwtHelper struct{}
 
-func (*jwtHelper) Parse(r *ghttp.Request, scopesSlice g.SliceStr) (string, string, error) {
-	secret := g.Cfg().GetString("jwt.secret") //配置修改会自动刷新
+func (*jwtHelper) Parse(tokenString string, scopesSlice g.SliceStr, secret string) (string, string, error) {
+	//secret := g.Cfg().GetString("jwt.secret") //配置修改会自动刷新
 	if secret == "" {
 		return "", "", errors.New("jwt secret invalid")
 	}
-	tokenString := r.GetHeader("Authorization")
+	//tokenString := r.GetHeader("Authorization")
 	if tokenString == "" {
 		return "", "", errors.New("authorization invalid")
 	}
@@ -65,9 +64,8 @@ func (*jwtHelper) Parse(r *ghttp.Request, scopesSlice g.SliceStr) (string, strin
 	return gconv.String(uuid), gconv.String(scope), nil
 }
 
-func (*jwtHelper) Generate(uuid string, scope string, duration time.Duration) (string, error) {
-	secret := g.Cfg().GetString("jwt.secret")
-	g.Dump(secret)
+func (*jwtHelper) Generate(uuid int64, scope string, duration time.Duration, secret string) (string, error) {
+	//secret := g.Cfg().GetString("jwt.secret")
 	if secret == "" {
 		return "", errors.New("jwt secret invalid")
 	}
@@ -76,7 +74,7 @@ func (*jwtHelper) Generate(uuid string, scope string, duration time.Duration) (s
 		Scope string `json:"scope"`
 		jwt.RegisteredClaims
 	}
-	uuidEncode, _ := gaes.Encrypt([]byte(uuid), []byte(secret))
+	uuidEncode, _ := gaes.Encrypt([]byte(gconv.String(uuid)), []byte(secret))
 	claims := MyCustomClaims{
 		hex.EncodeToString(uuidEncode),
 		scope,
