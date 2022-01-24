@@ -17,75 +17,89 @@ var Helper = jwtHelper{}
 
 type jwtHelper struct{}
 
-func (*jwtHelper) Parse(tokenString string, scopesSlice g.SliceStr, secret string) (string, string, error) {
+type ParseParams struct {
+	Token  string
+	Scopes g.SliceStr
+	Secret string
+}
+
+func (*jwtHelper) Parse(params ParseParams) (int64, string, error) {
 	//secret := g.Cfg().GetString("jwt.secret") //配置修改会自动刷新
-	if secret == "" {
-		return "", "", errors.New("jwt secret invalid")
+	if params.Secret == "" {
+		return 0, "", errors.New("jwt secret invalid")
 	}
 	//tokenString := r.GetHeader("Authorization")
-	if tokenString == "" {
-		return "", "", errors.New("authorization invalid")
+	if params.Token == "" {
+		return 0, "", errors.New("authorization invalid")
 	}
-	tokenMap := strings.Split(tokenString, "Bearer ")
+	tokenMap := strings.Split(params.Token, "Bearer ")
 	if len(tokenMap) != 2 {
-		return "", "", errors.New("bearer invalid")
+		return 0, "", errors.New("bearer invalid")
 	}
-	tokenString = tokenMap[1]
+	tokenString := tokenMap[1]
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(secret), nil
+		return []byte(params.Secret), nil
 	})
 	if err != nil {
-		return "", "", errors.New(err.Error())
+		return 0, "", errors.New(err.Error())
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return "", "", errors.New(err.Error())
+		return 0, "", errors.New(err.Error())
 	}
 	uuid := claims["uuid"]
 	if uuid == nil {
-		return "", "", errors.New("signature user key invalid")
+		return 0, "", errors.New("signature user key invalid")
 	}
 	encodeString, err := hex.DecodeString(gconv.String(uuid))
 	if err != nil {
-		return "", "", errors.New("signature user key decode hex fail")
+		return 0, "", errors.New("signature user key decode hex fail")
 	}
-	uuid, err = gaes.Decrypt(encodeString, []byte(secret))
+	uuid, err = gaes.Decrypt(encodeString, []byte(params.Secret))
 	if err != nil {
-		return "", "", errors.New("signature user key decrypt fail")
+		return 0, "", errors.New("signature user key decrypt fail")
 	}
 	scope := claims["scope"]
-	scopes := garray.NewStrArrayFrom(scopesSlice)
+	scopes := garray.NewStrArrayFrom(params.Scopes)
 	if scope == nil || !scopes.ContainsI(gconv.String(scope)) {
-		return "", "", errors.New("scope invalid")
+		return 0, "", errors.New("scope invalid")
 	}
-	return gconv.String(uuid), gconv.String(scope), nil
+	return gconv.Int64(uuid), gconv.String(scope), nil
 }
 
-func (*jwtHelper) Generate(uuid int64, scope string, duration time.Duration, secret string) (string, error) {
+type GenerateParams struct {
+	Uuid     int64
+	Scope    string
+	Duration time.Duration
+	Secret   string
+}
+
+func (*jwtHelper) Generate(params GenerateParams) (string, error) {
 	//secret := g.Cfg().GetString("jwt.secret")
-	if secret == "" {
-		return "", errors.New("jwt secret invalid")
+	if params.Uuid == 0 || params.Scope == "" || params.Duration == 0 || params.Secret == "" {
+		return "", errors.New("generate jwt params invalid")
 	}
+
 	type MyCustomClaims struct {
 		Uuid  string `json:"uuid"`
 		Scope string `json:"scope"`
 		jwt.RegisteredClaims
 	}
-	uuidEncode, _ := gaes.Encrypt([]byte(gconv.String(uuid)), []byte(secret))
+	uuidEncode, _ := gaes.Encrypt([]byte(gconv.String(params.Uuid)), []byte(params.Secret))
 	claims := MyCustomClaims{
 		hex.EncodeToString(uuidEncode),
-		scope,
+		params.Scope,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(params.Duration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Issuer:    "jwtHelper",
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, _ := token.SignedString([]byte(secret))
+	tokenString, _ := token.SignedString([]byte(params.Secret))
 	return tokenString, nil
 }
