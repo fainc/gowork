@@ -43,10 +43,12 @@ func (c *jsonResponse) Authorization(r *ghttp.Request, message string) {
 func (c *jsonResponse) output(r *ghttp.Request, status int, code int, message string, data interface{}) {
 	r.Response.WriteStatus(status)
 	r.Response.ClearBuffer()
-	_ = r.Response.WriteJsonExit(Res{
+	_ = r.Response.WriteJson(Res{
 		Code:      code,
 		Message:   message,
 		Data:      data,
 		RequestId: r.GetCtxVar("requestId", "123312"),
 	})
+	r.Response.Header().Set("Content-Type", "application/json;charset=utf-8")
+	r.Exit()
 }
