@@ -1,14 +1,12 @@
 package jwt
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/gogf/gf/container/garray"
-	"github.com/gogf/gf/crypto/gaes"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/golang-jwt/jwt/v4"
@@ -56,14 +54,14 @@ func (*jwtHelper) Parse(params ParseParams) (int, string, error) {
 	if uuid == nil {
 		return 0, "", errors.New("signature user key invalid")
 	}
-	encodeString, err := hex.DecodeString(gconv.String(uuid))
-	if err != nil {
-		return 0, "", errors.New("signature user key decode hex fail")
-	}
-	uuid, err = gaes.Decrypt(encodeString, []byte(params.Secret))
-	if err != nil {
-		return 0, "", errors.New("signature user key decrypt fail")
-	}
+	// encodeString, err := hex.DecodeString(gconv.String(uuid))
+	// if err != nil {
+	// 	return 0, "", errors.New("signature user key decode hex fail")
+	// }
+	// uuid, err = gaes.Decrypt(encodeString, []byte(params.Secret))
+	// if err != nil {
+	// 	return 0, "", errors.New("signature user key decrypt fail")
+	// }
 	scope := claims["scope"]
 	scopes := garray.NewStrArrayFrom(params.Scopes)
 	if scope == nil || !scopes.ContainsI(gconv.String(scope)) {
@@ -87,13 +85,13 @@ func (*jwtHelper) Generate(params GenerateParams) (string, error) {
 	}
 
 	type MyCustomClaims struct {
-		Uuid  string `json:"uuid"`
+		Uuid  int    `json:"uuid"`
 		Scope string `json:"scope"`
 		jwt.RegisteredClaims
 	}
-	uuidEncode, _ := gaes.Encrypt([]byte(gconv.String(params.Uuid)), []byte(params.Secret))
+	// uuidEncode, _ := gaes.Encrypt([]byte(gconv.String(params.Uuid)), []byte(params.Secret))
 	claims := MyCustomClaims{
-		hex.EncodeToString(uuidEncode),
+		params.Uuid,
 		params.Scope,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(params.Duration)),
