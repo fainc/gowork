@@ -25,7 +25,7 @@ type ParseParams struct {
 }
 
 // Parse jwt解析、解密
-func (*jwtHelper) Parse(params ParseParams) (int64, string, error) {
+func (*jwtHelper) Parse(params ParseParams) (int, string, error) {
 	// secret := g.Cfg().GetString("jwt.secret") //配置修改会自动刷新
 	if params.Secret == "" {
 		return 0, "", errors.New("jwt secret invalid")
@@ -69,11 +69,11 @@ func (*jwtHelper) Parse(params ParseParams) (int64, string, error) {
 	if scope == nil || !scopes.ContainsI(gconv.String(scope)) {
 		return 0, "", errors.New("scope invalid")
 	}
-	return gconv.Int64(uuid), gconv.String(scope), nil
+	return gconv.Int(uuid), gconv.String(scope), nil
 }
 
 type GenerateParams struct {
-	Uuid     int64         // * 非0用户ID
+	Uuid     int           // * 非0用户ID
 	Scope    string        // * 授权scope标志
 	Duration time.Duration // * 授权时长
 	Secret   string        // * jwt及加密密钥
