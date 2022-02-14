@@ -22,13 +22,11 @@ type ParseParams struct {
 	Secret string     // * jwt密钥
 }
 
-// Parse jwt解析、解密
+// Parse jwt解析
 func (*jwtHelper) Parse(params ParseParams) (int, string, error) {
-	// secret := g.Cfg().GetString("jwt.secret") //配置修改会自动刷新
 	if params.Secret == "" {
 		return 0, "", errors.New("jwt secret invalid")
 	}
-	// tokenString := r.GetHeader("Authorization")
 	if params.Token == "" {
 		return 0, "", errors.New("authorization invalid")
 	}
@@ -54,14 +52,6 @@ func (*jwtHelper) Parse(params ParseParams) (int, string, error) {
 	if uuid == nil {
 		return 0, "", errors.New("signature user key invalid")
 	}
-	// encodeString, err := hex.DecodeString(gconv.String(uuid))
-	// if err != nil {
-	// 	return 0, "", errors.New("signature user key decode hex fail")
-	// }
-	// uuid, err = gaes.Decrypt(encodeString, []byte(params.Secret))
-	// if err != nil {
-	// 	return 0, "", errors.New("signature user key decrypt fail")
-	// }
 	scope := claims["scope"]
 	scopes := garray.NewStrArrayFrom(params.Scopes)
 	if scope == nil || !scopes.ContainsI(gconv.String(scope)) {
@@ -79,7 +69,6 @@ type GenerateParams struct {
 
 // Generate 生成jwt
 func (*jwtHelper) Generate(params GenerateParams) (string, error) {
-	// secret := g.Cfg().GetString("jwt.secret")
 	if params.Uuid == 0 || params.Scope == "" || params.Duration == 0 || params.Secret == "" {
 		return "", errors.New("generate jwt params invalid")
 	}
@@ -89,7 +78,6 @@ func (*jwtHelper) Generate(params GenerateParams) (string, error) {
 		Scope string `json:"scope"`
 		jwt.RegisteredClaims
 	}
-	// uuidEncode, _ := gaes.Encrypt([]byte(gconv.String(params.Uuid)), []byte(params.Secret))
 	claims := MyCustomClaims{
 		params.Uuid,
 		params.Scope,
