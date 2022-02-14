@@ -3,6 +3,7 @@ package response
 
 import (
 	"github.com/gogf/gf/net/ghttp"
+	"github.com/gogf/gf/util/grand"
 )
 
 var Json = jsonResponse{}
@@ -47,7 +48,7 @@ func (c *jsonResponse) output(r *ghttp.Request, status int, code int, message st
 		Code:      code,
 		Message:   message,
 		Data:      data,
-		RequestId: r.GetCtxVar("requestId", "123312"),
+		RequestId: r.GetCtxVar("requestId", grand.Letters(32)),
 	})
 	r.Response.Header().Set("Content-Type", "application/json;charset=utf-8")
 	r.Exit()
