@@ -1,4 +1,4 @@
-package alisms
+package sms
 
 import (
 	"errors"
@@ -8,7 +8,11 @@ import (
 	"github.com/alibabacloud-go/tea/tea"
 )
 
-func createClient(accessKeyId *string, accessKeySecret *string) (_result *dysms.Client, _err error) {
+var Service = smsService{}
+
+type smsService struct{}
+
+func (s *smsService) createClient(accessKeyId *string, accessKeySecret *string) (_result *dysms.Client, _err error) {
 	config := &openapi.Config{
 		AccessKeyId:     accessKeyId,
 		AccessKeySecret: accessKeySecret,
@@ -28,8 +32,8 @@ type SendSmsParams struct {
 }
 
 // SendSms 接口是短信发送接口，支持在一次请求中向多个不同的手机号码发送同样内容的短信。
-func SendSms(params *SendSmsParams) (err error) {
-	client, dyErr := createClient(tea.String(params.AccessKeyId), tea.String(params.AccessKeySecret))
+func (s *smsService) SendSms(params *SendSmsParams) (err error) {
+	client, dyErr := s.createClient(tea.String(params.AccessKeyId), tea.String(params.AccessKeySecret))
 	if dyErr != nil {
 		return errors.New("短信对接错误，阿里云短信账户初始化异常")
 	}
@@ -52,8 +56,8 @@ func SendSms(params *SendSmsParams) (err error) {
 // SendBatchSms 接口是短信批量发送接口，支持在一次请求中分别向多个不同的手机号码发送不同签名的短信。
 // 手机号码等参数均为JSON格式，字段个数相同，一一对应，短信服务根据字段在JSON中的顺序判断发往指定手机号码的签名。
 // 如果您需要往多个手机号码中发送同样签名的短信，请使用SendSms接口实现。
-func SendBatchSms(params *SendSmsParams) (err error) {
-	client, dyErr := createClient(tea.String(params.AccessKeyId), tea.String(params.AccessKeySecret))
+func (s *smsService) SendBatchSms(params *SendSmsParams) (err error) {
+	client, dyErr := s.createClient(tea.String(params.AccessKeyId), tea.String(params.AccessKeySecret))
 	if dyErr != nil {
 		return errors.New("短信对接错误，阿里云短信账户初始化异常")
 	}
