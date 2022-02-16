@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
-	"github.com/gogf/gf/encoding/gurl"
 	"github.com/gogf/gf/util/guid"
 )
 
@@ -36,7 +35,16 @@ type DownloadParams struct {
 
 type SignUrlParams struct {
 	*BaseParams
+	ACL     string // (可选)上传时权限控制参数
 	Timeout int64
+}
+
+type ListObjectsParams struct {
+	*BaseParams
+	Page    int64
+	MaxKeys int
+	Marker  string
+	Prefix  string
 }
 
 func (s *ossService) InitClient(Endpoint string, AccessKeyId string, AccessKeySecret string, UseCname bool) (client *oss.Client, err error) {
@@ -101,11 +109,14 @@ func (s *ossService) CreateSignedPutUrl(params *SignUrlParams) (signedURL string
 	if err != nil {
 		return "", err
 	}
-	signedURL, err = bucket.SignURL(params.ObjectKey, oss.HTTPPut, params.Timeout)
+	options := []oss.Option{
+		oss.ObjectACL(oss.ACLType(params.ACL)),
+	}
+	signedURL, err = bucket.SignURL(params.ObjectKey, oss.HTTPPut, params.Timeout, options...)
 	if err != nil {
 		return "", errors.New("OSS签名授权失败，错误信息：" + err.Error())
 	}
-	return gurl.Decode(signedURL)
+	return
 }
 
 // CreateSignedGetUrl 创建临时下载/访问签名URL
@@ -138,4 +149,15 @@ func (s *ossService) DeleteObject(params *BaseParams) (err error) {
 func (s *ossService) RandomObjectKey(prefix string, suffix string) string {
 	randomKey := guid.S()
 	return prefix + randomKey + "." + suffix
+}
+
+// ListBucketObjects 分页列举OSS文件
+func (s *ossService) ListBucketObjects(params *ListObjectsParams) (lsRes oss.ListObjectsResult, err error) {
+	bucket, err := s.InitBucket(params.Endpoint, params.AccessKeyId, params.AccessKeySecret, params.UseCname, params.Bucket)
+	if err != nil {
+		return
+	}
+	marker := oss.Marker(params.Marker)
+	lsRes, err = bucket.ListObjects(oss.MaxKeys(params.MaxKeys), marker, oss.Prefix(params.Prefix))
+	return
 }
