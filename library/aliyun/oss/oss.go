@@ -47,6 +47,11 @@ type ListObjectsParams struct {
 	Prefix  string
 }
 
+type DeleteObjectsParams struct {
+	*BaseParams
+	ObjectKeys []string
+}
+
 func (s *ossService) InitClient(Endpoint string, AccessKeyId string, AccessKeySecret string, UseCname bool) (client *oss.Client, err error) {
 	client, err = oss.New(Endpoint, AccessKeyId, AccessKeySecret, oss.UseCname(UseCname), oss.Timeout(30, 120))
 	return
@@ -132,6 +137,17 @@ func (s *ossService) CreateSignedGetUrl(params *SignUrlParams) (signedURL string
 	return
 }
 
+// ListBucketObjects 分页列举OSS文件
+func (s *ossService) ListBucketObjects(params *ListObjectsParams) (lsRes oss.ListObjectsResult, err error) {
+	bucket, err := s.InitBucket(params.Endpoint, params.AccessKeyId, params.AccessKeySecret, params.UseCname, params.Bucket)
+	if err != nil {
+		return
+	}
+	marker := oss.Marker(params.Marker)
+	lsRes, err = bucket.ListObjects(oss.MaxKeys(params.MaxKeys), marker, oss.Prefix(params.Prefix))
+	return
+}
+
 // DeleteObject 删除单个OSS存储文件
 func (s *ossService) DeleteObject(params *BaseParams) (err error) {
 	bucket, err := s.InitBucket(params.Endpoint, params.AccessKeyId, params.AccessKeySecret, params.UseCname, params.Bucket)
@@ -145,19 +161,21 @@ func (s *ossService) DeleteObject(params *BaseParams) (err error) {
 	return
 }
 
+// DeleteObjects 删除多个OSS存储文件
+func (s *ossService) DeleteObjects(params *DeleteObjectsParams) (err error) {
+	bucket, err := s.InitBucket(params.Endpoint, params.AccessKeyId, params.AccessKeySecret, params.UseCname, params.Bucket)
+	if err != nil {
+		return err
+	}
+	_, err = bucket.DeleteObjects(params.ObjectKeys, oss.DeleteObjectsQuiet(true))
+	if err != nil {
+		return errors.New("删除OSS文件失败，错误信息：" + err.Error())
+	}
+	return
+}
+
 // RandomObjectKey 随机唯一文件名
 func (s *ossService) RandomObjectKey(prefix string, suffix string) string {
 	randomKey := guid.S()
 	return prefix + randomKey + "." + suffix
-}
-
-// ListBucketObjects 分页列举OSS文件
-func (s *ossService) ListBucketObjects(params *ListObjectsParams) (lsRes oss.ListObjectsResult, err error) {
-	bucket, err := s.InitBucket(params.Endpoint, params.AccessKeyId, params.AccessKeySecret, params.UseCname, params.Bucket)
-	if err != nil {
-		return
-	}
-	marker := oss.Marker(params.Marker)
-	lsRes, err = bucket.ListObjects(oss.MaxKeys(params.MaxKeys), marker, oss.Prefix(params.Prefix))
-	return
 }
