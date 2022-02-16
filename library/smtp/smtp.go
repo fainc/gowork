@@ -14,6 +14,7 @@ type ConfigParams struct {
 	Password           string
 	InsecureSkipVerify bool
 }
+
 type SendMailParams struct {
 	From         string        // 发送人完整邮箱账户
 	FromName     string        // 发送人账户别名（收件方显示的发件人名称，如不设置默认显示邮箱号开头英文）
