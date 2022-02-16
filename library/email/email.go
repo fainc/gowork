@@ -1,4 +1,4 @@
-package mail
+package email
 
 import (
 	"crypto/tls"
@@ -15,7 +15,7 @@ type ConfigParams struct {
 	InsecureSkipVerify bool
 }
 
-type SendMailParams struct {
+type SendEMailParams struct {
 	From         string        // 发送人完整邮箱账户
 	FromName     string        // 发送人账户别名（收件方显示的发件人名称，如不设置默认显示邮箱号开头英文）
 	To           []string      // 收件人邮箱号（支持多邮箱）
@@ -26,7 +26,7 @@ type SendMailParams struct {
 	ConfigParams *ConfigParams //  基本配置
 }
 
-func SendMail(params *SendMailParams) (err error) {
+func SendEMail(params *SendEMailParams) (err error) {
 	if len(params.To) == 0 {
 		return errors.New("邮件收件人列表不得为空")
 	}
