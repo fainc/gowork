@@ -1,4 +1,4 @@
-package smtp
+package mail
 
 import (
 	"crypto/tls"
@@ -23,7 +23,7 @@ type SendMailParams struct {
 	Body         string        // 邮件正文（html格式）
 	AttachPath   string        // （可选）附件本地文件地址
 	CcAddress    []string      // （可选）抄送 完整邮箱账户（支持多邮箱）
-	ConfigParams *ConfigParams // smtp 基本配置
+	ConfigParams *ConfigParams //  基本配置
 }
 
 func SendMail(params *SendMailParams) (err error) {
@@ -34,7 +34,7 @@ func SendMail(params *SendMailParams) (err error) {
 	m.SetHeader("From", m.FormatAddress(params.From, params.FromName))
 	m.SetHeader("To", params.To...)
 	if len(params.To) != 0 {
-		m.SetHeader("Cc", params.CcAddress...) // 抄送
+		m.SetHeader("Cc", params.CcAddress...)
 	}
 	m.SetHeader("Subject", params.Subject)
 	m.SetBody("text/html", params.Body)
