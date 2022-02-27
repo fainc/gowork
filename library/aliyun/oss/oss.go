@@ -35,8 +35,9 @@ type DownloadParams struct {
 
 type SignUrlParams struct {
 	*BaseParams
-	ACL     string // (可选)上传时权限控制参数
-	Timeout int64
+	ACL         string // (可选)上传时权限控制参数
+	Timeout     int64
+	ContentType string
 }
 
 type ListObjectsParams struct {
@@ -116,6 +117,7 @@ func (s *ossService) CreateSignedPutUrl(params *SignUrlParams) (signedURL string
 	}
 	options := []oss.Option{
 		oss.ObjectACL(oss.ACLType(params.ACL)),
+		oss.ContentType(params.ContentType),
 	}
 	signedURL, err = bucket.SignURL(params.ObjectKey, oss.HTTPPut, params.Timeout, options...)
 	if err != nil {
