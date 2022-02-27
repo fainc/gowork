@@ -125,6 +125,21 @@ func (s *ossService) CreateSignedPutUrl(params *SignUrlParams) (signedURL string
 	}
 	return
 }
+func (s *ossService) CreateSignedPostUrl(params *SignUrlParams) (signedURL string, err error) {
+	bucket, err := s.InitBucket(params.Endpoint, params.AccessKeyId, params.AccessKeySecret, params.UseCname, params.Bucket)
+	if err != nil {
+		return "", err
+	}
+	options := []oss.Option{
+		oss.ObjectACL(oss.ACLType(params.ACL)),
+		oss.ContentType(params.ContentType),
+	}
+	signedURL, err = bucket.SignURL(params.ObjectKey, oss.HTTPPost, params.Timeout, options...)
+	if err != nil {
+		return "", errors.New("OSS签名授权失败，错误信息：" + err.Error())
+	}
+	return
+}
 
 // CreateSignedGetUrl 创建临时下载/访问签名URL
 func (s *ossService) CreateSignedGetUrl(params *SignUrlParams) (signedURL string, err error) {
