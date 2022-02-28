@@ -118,6 +118,7 @@ func (s *ossService) CreateSignedPutUrl(params *SignUrlParams) (signedURL string
 	options := []oss.Option{
 		oss.ObjectACL(oss.ACLType(params.ACL)),
 		oss.ContentType(params.ContentType),
+		oss.ResponseContentType("json"),
 	}
 	signedURL, err = bucket.SignURL(params.ObjectKey, oss.HTTPPut, params.Timeout, options...)
 	if err != nil {
