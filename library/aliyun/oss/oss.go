@@ -191,6 +191,18 @@ func (s *ossService) DeleteObjects(params *DeleteObjectsParams) (err error) {
 	return
 }
 
+func (s *ossService) PutObjectFromFileWithURL(params *UploadParams, signedURL string, options []oss.Option) (err error) {
+	bucket, err := s.InitBucket(params.Endpoint, params.AccessKeyId, params.AccessKeySecret, params.UseCname, params.Bucket)
+	if err != nil {
+		return err
+	}
+	err = bucket.PutObjectFromFileWithURL(signedURL, params.LocalFilePath, options...)
+	if err != nil {
+		return errors.New("上传文件失败，错误信息：" + err.Error())
+	}
+	return
+}
+
 // RandomObjectKey 随机唯一文件名
 func (s *ossService) RandomObjectKey(prefix string, suffix string) string {
 	randomKey := guid.S()
