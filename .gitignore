@@ -18,7 +18,6 @@ main
 main.go
 gf-empty
 .vscode
-go.sum
 /app/
 /config/
 /router/
