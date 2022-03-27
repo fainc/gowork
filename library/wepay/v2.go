@@ -15,6 +15,8 @@ type wePayV2Service struct{}
 
 var wePayV2Var = wePayV2Service{}
 
+var v2Client *wechat.Client
+
 func WePayV2() *wePayV2Service {
 	return &wePayV2Var
 }
@@ -27,23 +29,24 @@ type InitV2ClientParams struct {
 	CertPath string
 }
 
-// InitClient 初始化微信配置
-func (receiver *wePayV2Service) InitClient(params *InitV2ClientParams) (*wechat.Client, error) {
-	client := wechat.NewClient(params.AppId, params.MchId, params.ApiKey, true)
-
-	// 打开调试
-	if params.Debug {
-		client.DebugSwitch = gopay.DebugOn
-	}
-
-	// 使用微信pkcs12证书
-	if params.CertPath != "" {
-		err := client.AddCertPkcs12FilePath(params.CertPath)
-		if err != nil {
-			return client, errors.New("初始化微信pkcs12证书失败")
+func (receiver *wePayV2Service) GetClient(params *InitV2ClientParams) (*wechat.Client, error) {
+	if v2Client != nil {
+		client := wechat.NewClient(params.AppId, params.MchId, params.ApiKey, true)
+		// 打开调试
+		if params.Debug {
+			client.DebugSwitch = gopay.DebugOn
 		}
+		// 使用微信pkcs12证书
+		if params.CertPath != "" {
+			err := client.AddCertPkcs12FilePath(params.CertPath)
+			if err != nil {
+				return client, errors.New("初始化微信pkcs12证书失败")
+			}
+		}
+		v2Client = client
 	}
-	return client, nil
+	return v2Client, nil
+
 }
 
 type UnifiedOrderV2Params struct {
@@ -75,7 +78,10 @@ func (receiver *wePayV2Service) UnifiedOrder(params *UnifiedOrderV2Params) (erro
 	if params.TradeType == "JSAPI" && params.OpenId != "" {
 		bm.Set("openid", params.OpenId)
 	}
-	client, err := receiver.InitClient(params.ClientParams)
+	client, err := receiver.GetClient(params.ClientParams)
+	if err != nil {
+		return err, ""
+	}
 	// 请求支付下单，成功后得到结果
 	wxRsp, err := client.UnifiedOrder(context.TODO(), bm)
 	if err != nil {
