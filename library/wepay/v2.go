@@ -44,6 +44,9 @@ func (receiver *v2Service) NewClient(params *InitV2ClientParams) (*wechat.Client
 
 	if params.ReadConfigKey != "" {
 		AppId = g.Cfg().GetString(params.ReadConfigKey + ".AppId")
+		if AppId == "" {
+			return nil, errors.New("读取指定微信支付配置无效")
+		}
 		MchId = g.Cfg().GetString(params.ReadConfigKey + ".MchId")
 		ApiKey = g.Cfg().GetString(params.ReadConfigKey + ".ApiKey")
 		Debug = g.Cfg().GetBool(params.ReadConfigKey + ".Debug")
