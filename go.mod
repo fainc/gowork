@@ -10,6 +10,7 @@ require (
 	github.com/gogf/gf v1.16.7
 	github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/satori/go.uuid v1.2.0 // indirect
+	github.com/shopspring/decimal v1.3.1
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
